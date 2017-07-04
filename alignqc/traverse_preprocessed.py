@@ -175,6 +175,7 @@ def main(args):
     p = Pool(processes=args.threads)
   z = 0
   for line in inf:
+    z +=1
     (qname, data) = line.rstrip().split("\t")
     if qname!=prev:
       buftot = len(buffer.keys())
@@ -184,6 +185,7 @@ def main(args):
         else:
           r = do_buffer(buffer,args)
           process_buffer_output(r)
+          sys.stderr.write(str(z)+"    \r")
         buffer = {}
     if qname not in buffer: buffer[qname] = []
     buffer[qname].append(data)
@@ -219,14 +221,18 @@ def main(args):
 # qlen - range spanned by query alignments
 def check_paths(path_data,best_ind,args):
   #other_inds = [x for x in range(0,len(path_data)) if x != best_ind]
-  possibles = get_index_sets(len(path_data))
+  if len(path_data) > args.max_paths:
+     #sys.stderr.write("simplifying checks to longest paths\n")
+     best_ind = 0
+     path_data = sorted(path_data, key=lambda x: x['tx'].length)
+     path_data = path_data[0:10]
+  possibles = [x for x in get_index_sets(len(path_data)) if best_ind in x]
   new_best = [path_data[best_ind]]
   new_bases = path_data[best_ind]['aligned_bases']
   new_inds = set([best_ind])
   new_type = 'original'
   new_qlen = path_data[best_ind]['qrng'].length
   for possible_path in possibles:
-    if best_ind not in possible_path: continue # only consider path sets that have our best index in it
     res = evaluate_path(path_data,possible_path,best_ind,args)
     if res['any']:
       bases = sum([x['aligned_bases'] for x in res['path']])
@@ -326,6 +332,7 @@ def do_inputs():
   parser.add_argument('--max_target_gap',type=int,default=500000,help="Not a gapped alignment if gap is greater than this")
   parser.add_argument('--max_query_gap',type=int,default=500000,help="Consider a gapped alignment incompatible if greater thant this")
   parser.add_argument('--required_fractional_improvement',type=float,default=0.2,help="combination path should be this much better than best single alignment")  
+  parser.add_argument('--max_paths',type=int,default=15,help="Performance parameter only analyze the X longest alignment paths for complicated reads")
 
   # Temporary working directory step 1 of 3 - Definition
   group = parser.add_mutually_exclusive_group()

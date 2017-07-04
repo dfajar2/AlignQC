@@ -40,16 +40,14 @@ def do_chunk(ilines,infile,args):
     if e.is_aligned():
       tx = e.get_target_transcript(args.minimum_intron_size)
       value =  {'qrng':e.actual_original_query_range.get_range_string(),'tx':tx.get_gpd_line(),'flag':flag,'qlen':e.original_query_sequence_length,'aligned_bases':e.get_aligned_bases_count()}
-      results.append(e.qname+"\t"+base64.b64encode(
+      results.append(e.entries.qname+"\t"+base64.b64encode(
                                       zlib.compress(
                                        pickle.dumps(value))))
-      #results.append([e.value('qname'),zlib.compress(pickle.dumps(value))])
     else:
-      value =  {'qrng':'','tx':'','flag':flag,'qlen':e.original_query_length,'aligned_bases':0}
-      results.append(e.qname+"\t"+base64.b64encode(
+      value =  {'qrng':'','tx':'','flag':flag,'qlen':e.original_query_sequence_length,'aligned_bases':0}
+      results.append(e.entries.qname+"\t"+base64.b64encode(
                                       zlib.compress(
                                        pickle.dumps(value))))
-      #results.append([e.value('qname'),zlib.compress(pickle.dumps(value))])
   return results
 
 def process_chunk(res):
