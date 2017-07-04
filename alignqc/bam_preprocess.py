@@ -67,8 +67,6 @@ def process_chunk(res):
 def main(args):
   bind_path = args.input+'.bgi'
   if not os.path.isfile(bind_path):
-    sys.stderr.write("WARNING: index has not been created for:\n"+args.input+"\n")
-    sys.stderr.write("We will create an index in a temporary file, but you should make one.\n")
     bind_path = args.tempdir+'/myindex.bgi'
     cmd = "bam_bgzf_index.py "+args.input+" -o "+bind_path+" --threads "+str(args.threads)
     bam_bgzf_index.external_cmd(cmd)
